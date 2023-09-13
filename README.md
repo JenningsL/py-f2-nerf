@@ -41,7 +41,8 @@ unzip ./libtorch-cxx11-abi-shared-with-deps-1.13.1%2Bcu117.zip
 The lowest g++ version I have tested is 7.5.0.
 ```shell
 cd ..
-cmake . -B build
+# Use libtorch of torch python package
+cmake . -B build -DLIBTORCH_ROOT=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'`
 cmake --build build --target main --config RelWithDebInfo -j
 ```
 

@@ -15,6 +15,9 @@ set(CMAKE_CUDA_STANDARD 14)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_EXTENSIONS OFF)
 set(CUDA_LINK_LIBRARIES_KEYWORD PUBLIC)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)
 
 add_definitions(-DHALF_PRECISION)
 
@@ -35,11 +38,18 @@ find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 # Libtorch
-set(CMAKE_PREFIX_PATH ${DCMAKE_PREFIX_PATH}$ ${CMAKE_SOURCE_DIR}/External/libtorch/)
-find_package(Torch REQUIRED PATHS ${CMAKE_SOURCE_DIR}/External/libtorch NO_DEFAULT_PATH)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-link_directories(${CMAKE_SOURCE_DIR}/External/libtorch/lib/)
-include_directories(${TORCH_INCLUDE_DIRS})
+if (NOT DEFINED LIBTORCH_ROOT)
+        set(LIBTORCH_ROOT ${CMAKE_SOURCE_DIR}/External/libtorch/)
+        message("Use default LIBTORCH_ROOT: ${LIBTORCH_ROOT}")
+else()
+        message("Use provided LIBTORCH_ROOT: ${LIBTORCH_ROOT}")
+        set(CMAKE_PREFIX_PATH ${DCMAKE_PREFIX_PATH}$ ${LIBTORCH_ROOT})
+        find_package(Torch REQUIRED PATHS ${LIBTORCH_ROOT} NO_DEFAULT_PATH)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+        link_directories(${LIBTORCH_ROOT}/lib/)
+        include_directories(${TORCH_INCLUDE_DIRS})
+endif()
+# message(${TORCH_INCLUDE_DIRS} ${TORCH_LIBRARIES})
 
 # YAML
 add_subdirectory(External/yaml-cpp)
@@ -67,14 +77,22 @@ list(APPEND SRC_ALL
 list(APPEND SRC_ALL src/ExpRunner.cpp)
 
 
-set(ALL_LIBS ${TORCH_LIBRARIES} ${TORCH_CUDA_LIBRARIES} ${ZLIB_LIBRARIES} yaml-cpp fmt::fmt)
+set(ALL_LIBS ${TORCH_LIBRARIES} ${TORCH_CUDA_LIBRARIES} ${ZLIB_LIBRARIES} yaml-cpp fmt::fmt 
+        ${LIBTORCH_ROOT}/lib/libtorch_python.so)
 set(ALL_LIBS ${ALL_LIBS} tiny-cuda-nn stdc++fs)
 
 # ------------------------------------ Add executables ---------------------------------------
-add_executable(main main.cpp ${SRC_ALL})
-target_link_libraries(main ${ALL_LIBS})
-set_property(TARGET main PROPERTY CXX_STANDARD 17)
-set_property(TARGET main PROPERTY CUDA_ARCHITECTURES ${TCNN_CUDA_ARCHITECTURES})
+# add_executable(main main.cpp ${SRC_ALL})
+# target_link_libraries(main ${ALL_LIBS})
+# set_property(TARGET main PROPERTY CXX_STANDARD 17)
+# set_property(TARGET main PROPERTY CUDA_ARCHITECTURES ${TCNN_CUDA_ARCHITECTURES})
+
+# python extension
+add_subdirectory(${CMAKE_SOURCE_DIR}/External/pybind11-2.11.1)
+pybind11_add_module(py_f2nerf src/py_f2nerf.cpp ${SRC_ALL})
+target_link_libraries(py_f2nerf PRIVATE ${ALL_LIBS})
+set_property(TARGET py_f2nerf PROPERTY CXX_STANDARD 17)
+set_property(TARGET py_f2nerf PROPERTY CUDA_ARCHITECTURES ${TCNN_CUDA_ARCHITECTURES})
 
 # Install scripts
 configure_file(scripts/run.py ${CMAKE_BINARY_DIR}/run.py COPYONLY)
