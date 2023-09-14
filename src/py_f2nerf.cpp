@@ -7,6 +7,7 @@
 #include "PtsSampler/PtsSamplerFactory.h"
 #include "Dataset/Dataset.h"
 #include "PtsSampler/PersSampler.h"
+#include "Field/Hash3DAnchored.h"
 // #include "Renderer/Renderer.h"
 
 namespace py = pybind11;
@@ -43,6 +44,11 @@ PYBIND11_MODULE(py_f2nerf, m) {
         .def(py::init<GlobalDataPool*>())
         .def("GetSamples", &PersSampler::GetSamples)
         .def("UpdateOctNodes", &PersSampler::UpdateOctNodes);
+
+    py::class_<Hash3DAnchored>(m, "Hash3DAnchoredField")
+        .def(py::init<GlobalDataPool*>())
+        .def("AnchoredQuery", &Hash3DAnchored::AnchoredQuery)
+        .def("OptimParamGroups", &Hash3DAnchored::OptimParamGroups);
 
     // py::class_<Renderer>(m, "Renderer")
     //     .def(py::init<GlobalDataPool*, int>());

@@ -14,8 +14,11 @@ dataset = py_f2nerf.Dataset(data_pool)
 train_rays, gt_colors, emb_idx = dataset.RandRaysData(128, 1)
 sampler = py_f2nerf.PersSampler(data_pool)
 samples = sampler.GetSamples(train_rays.origins, train_rays.dirs, train_rays.bounds)
-print(samples.pts)
+print(samples.pts.shape, samples.anchors.shape) # perspective warpped points(-1,1), leaf node index 
 
+field = py_f2nerf.Hash3DAnchoredField(data_pool)
+feats = field.AnchoredQuery(samples.pts, samples.anchors[:,0])
+print(feats.shape)
 # # renderer = py_f2nerf.Renderer(data_pool, 10)
 
 # from torch.utils.cpp_extension import load

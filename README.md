@@ -42,8 +42,8 @@ The lowest g++ version I have tested is 7.5.0.
 ```shell
 cd ..
 # Use libtorch of torch python package
-cmake . -B build -DLIBTORCH_ROOT=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'`
-cmake --build build --target main --config RelWithDebInfo -j
+cmake . -B build -DLIBTORCH_ROOT=`python -c 'import torch;print(torch.utils.cmake_prefix_path+"/../../")'`
+cmake --build build --target py_f2nerf --config RelWithDebInfo -j
 ```
 
 ## Run
