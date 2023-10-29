@@ -682,7 +682,7 @@ PersSampler::PersSampler(GlobalDataPool* global_data_pool) {
   int max_level = config["max_level"].as<int>();
   pers_octree_ = std::make_unique<PersOctree>(
       max_level, bbox_side_len, split_dist_thres,
-      dataset->c2w_train_, dataset->w2c_train_, dataset->intri_train_, dataset->bounds_train_);
+      global_data_pool->c2w_train_, global_data_pool->w2c_train_, global_data_pool->intri_train_, global_data_pool->bounds_train_);
 
   VisOctree();
 

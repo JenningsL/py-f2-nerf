@@ -13,9 +13,11 @@
 struct SampleResultFlex {
   using Tensor = torch::Tensor;
   Tensor pts;                           // [ n_all_pts, 3 ]
+  Tensor pts_real;                      // [ n_all_pts, 3 ] in real space
   Tensor dirs;                          // [ n_all_pts, 3 ]
-  Tensor dt;                            // [ n_all_pts, 1 ]
-  Tensor t;                             // [ n_all_pts, 1 ]
+  Tensor dt;                            // [ n_all_pts, 1 ] in warp space
+  Tensor dt_real;                       // [ n_all_pts, 1 ] in real space
+  Tensor t;                             // [ n_all_pts, 1 ] in real space
   Tensor anchors;                       // [ n_all_pts, 3 ]
   Tensor pts_idx_bounds;                // [ n_rays, 2 ] // start, end
   Tensor first_oct_dis;                 // [ n_rays, 1 ]

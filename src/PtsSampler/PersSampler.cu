@@ -193,7 +193,7 @@ __global__ void RayMarchKernel(int n_rays, float sample_l, bool scale_by_dis,
                                TreeNode* tree_nodes, TransInfo* transes,
                                Wec2i* pts_idx_start_end_ptr,
                                Wec3f* sampled_world_pts, Wec3f* sampled_pts, Wec3f* sampled_dirs, Wec3i* sampled_anchors,
-                               float* sampled_dists, float* sampled_ts, int* sampled_oct_idx,
+                               float* sampled_dists, float* sampled_dists_real, float* sampled_ts, int* sampled_oct_idx,
                                float* first_oct_dis) {
   int ray_idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (ray_idx >= n_rays) {
@@ -220,6 +220,7 @@ __global__ void RayMarchKernel(int n_rays, float sample_l, bool scale_by_dis,
     sampled_dirs = sampled_dirs + pts_idx;
     sampled_anchors = sampled_anchors + pts_idx;
     sampled_dists = sampled_dists + pts_idx;
+    sampled_dists_real = sampled_dists_real + pts_idx;
     sampled_ts = sampled_ts + pts_idx;
     sampled_oct_idx = sampled_oct_idx + pts_idx;
 
@@ -280,6 +281,7 @@ __global__ void RayMarchKernel(int n_rays, float sample_l, bool scale_by_dis,
 
       QueryFrameTransform(cur_trans, cur_xyz, &fill_xyz);
       sampled_dists[pts_ptr] = exp_march_step * (proj_xyz.norm() + 1e-6f);
+      sampled_dists_real[pts_ptr] = exp_march_step;
       sampled_pts[pts_ptr] = fill_xyz;
       sampled_anchors[pts_ptr][0] = cur_node.trans_idx;
       sampled_anchors[pts_ptr][1] = cur_oct_idx;
@@ -389,7 +391,7 @@ SampleResultFlex PersSampler::GetSamples(const Tensor& rays_o_raw, const Tensor&
       RE_INTER(TreeNode*, pers_octree_->tree_nodes_gpu_.data_ptr()),
       RE_INTER(TransInfo*, pers_octree_->pers_trans_gpu_.data_ptr()),
       RE_INTER(Wec2i*, pts_idx_start_end.data_ptr()),
-      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
   );
 
   pts_idx_start_end.index_put_({Slc(), 0}, torch::cumsum(pts_idx_start_end.index({Slc(), 0}), 0));
@@ -400,6 +402,7 @@ SampleResultFlex PersSampler::GetSamples(const Tensor& rays_o_raw, const Tensor&
   Tensor sampled_dirs = torch::empty({ n_all_pts, 3 }, CUDAFloat);
   Tensor sampled_anchors = torch::empty({ n_all_pts, 3 }, CUDAInt);
   Tensor sampled_dists = torch::empty({ n_all_pts }, CUDAFloat);
+  Tensor sampled_dists_real = torch::empty({ n_all_pts }, CUDAFloat);
   Tensor sampled_t = torch::empty({ n_all_pts }, CUDAFloat);
   Tensor sampled_oct_idx = torch::full({ n_all_pts }, -1,CUDAInt).contiguous();
   Tensor first_oct_dis = torch::zeros({ n_rays, 1 }, CUDAFloat).contiguous();
@@ -417,15 +420,17 @@ SampleResultFlex PersSampler::GetSamples(const Tensor& rays_o_raw, const Tensor&
       RE_INTER(Wec3f*, sampled_pts.data_ptr()),
       RE_INTER(Wec3f*, sampled_dirs.data_ptr()),
       RE_INTER(Wec3i*, sampled_anchors.data_ptr()),
-      sampled_dists.data_ptr<float>(), sampled_t.data_ptr<float>(),
+      sampled_dists.data_ptr<float>(), sampled_dists_real.data_ptr<float>(), sampled_t.data_ptr<float>(),
       sampled_oct_idx.data_ptr<int>(),
       first_oct_dis.data_ptr<float>()
   );
 
   return {
       sampled_pts,
+      sampled_world_pts,
       sampled_dirs,
       sampled_dists,
+      sampled_dists_real,
       sampled_t,
       sampled_anchors,
       pts_idx_start_end,

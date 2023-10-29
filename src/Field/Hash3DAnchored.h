@@ -28,6 +28,11 @@ public:
                        const Tensor& anchors           // [ n_points, 3 ]
                ) override;
 
+  Tensor QueryFeature(const Tensor& points,           // [ n_points, 3 ]
+                      const Tensor& anchors,           // [ n_points, 3 ]
+                      Tensor& feat_pool               // [ pool_size_, n_channels_ ];
+                );
+
   int LoadStates(const std::vector<Tensor>& states, int idx) override;
   std::vector<Tensor> States() override;
   std::vector<torch::optim::OptimizerParamGroup> OptimParamGroups() override;
@@ -35,6 +40,7 @@ public:
 
   int pool_size_;
   int mlp_hidden_dim_, mlp_out_dim_, n_hidden_layers_;
+  int feat_dim_ = N_CHANNELS * N_LEVELS;
 
   Tensor feat_pool_;   // [ pool_size_, n_channels_ ];
   Tensor prim_pool_;   // [ n_levels, 3 ];

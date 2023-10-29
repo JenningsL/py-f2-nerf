@@ -4,6 +4,7 @@
 #pragma once
 #include <string>
 #include <yaml-cpp/yaml.h>
+#include <torch/torch.h>
 
 enum RunningMode { TRAIN, VALIDATE };
 
@@ -29,5 +30,16 @@ public:
   float near_ = 0.1f;
   float gradient_scaling_progress_ = 1.f;
   bool backward_nan_ = false;
+
+  // dataset
+  torch::Tensor c2w_train_, w2c_train_, intri_train_, bounds_train_;
 };
+
+std::unique_ptr<GlobalDataPool> CreateGlobalDataPool(
+  const std::string &config_path, 
+  std::string &base_exp_dir, 
+  torch::Tensor &c2w_train, 
+  torch::Tensor &w2c_train, 
+  torch::Tensor &intri_train, 
+  torch::Tensor &bounds_train);
 

@@ -98,6 +98,16 @@ Tensor Hash3DAnchored::AnchoredQuery(const Tensor& points, const Tensor& anchors
   return output;
 }
 
+Tensor Hash3DAnchored::QueryFeature(const Tensor& points, const Tensor& anchors, Tensor& feat_pool) {
+  auto info = torch::make_intrusive<Hash3DAnchoredInfo>();
+
+  query_points_ = ((points + 1.f) * .5f).contiguous();   // [-1, 1] -> [0, 1]
+  query_volume_idx_ = anchors.contiguous();
+  info->hash3d_ = this;
+  Tensor feat = torch::autograd::Hash3DAnchoredFunction::apply(feat_pool, torch::IValue(info))[0];  // [n_points, n_levels * n_channels];
+  return feat;
+}
+
 int Hash3DAnchored::LoadStates(const std::vector<Tensor> &states, int idx) {
   feat_pool_.data().copy_(states[idx++]);
   prim_pool_ = states[idx++].clone().to(torch::kCUDA).contiguous();   // The size may changed.
