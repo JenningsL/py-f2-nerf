@@ -19,10 +19,14 @@
 // 8
 #define RES_BASE_POW_2 3.f
 
-class Hash3DAnchored : public Field  {
+class Hash3DAnchored : public torch::nn::Module, public Field  {
   using Tensor = torch::Tensor;
 public:
   Hash3DAnchored(GlobalDataPool* global_data_pool_);
+
+  Tensor forward(const Tensor& points,           // [ n_points, 3 ]
+                const Tensor& anchors           // [ n_points, 3 ]
+               );
 
   Tensor AnchoredQuery(const Tensor& points,           // [ n_points, 3 ]
                        const Tensor& anchors           // [ n_points, 3 ]
@@ -48,7 +52,7 @@ public:
   Tensor feat_local_idx_;  // [ n_levels, n_volumes ];
   Tensor feat_local_size_; // [ n_levels, n_volumes ];
 
-  std::unique_ptr<TCNNWP> mlp_;
+  std::shared_ptr<TCNNWP> mlp_;
 
   int n_volumes_;
 

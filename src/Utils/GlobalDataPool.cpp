@@ -21,5 +21,8 @@ std::unique_ptr<GlobalDataPool> CreateGlobalDataPool(const std::string &config_p
   data_pool->w2c_train_ = w2c_train;
   data_pool->intri_train_ = intri_train;
   data_pool->bounds_train_ = bounds_train;
+
+  data_pool->ray_march_init_fineness_ = data_pool->config_["train"]["ray_march_init_fineness"].as<float>();
+  data_pool->ray_march_fineness_decay_end_iter_ = data_pool->config_["train"]["ray_march_fineness_decay_end_iter"].as<float>();
   return data_pool;
 }

@@ -609,7 +609,7 @@ void PersSampler::UpdateOctNodes(const SampleResultFlex& sample_result,
 
   while (!sub_div_milestones_.empty() && sub_div_milestones_.back() <= global_data_pool_->iter_step_) {
     pers_octree_->ProcOctree(true, true, sub_div_milestones_.back() <= 0);
-    pers_octree_->MarkInvisibleNodes();
+    // pers_octree_->MarkInvisibleNodes();
     pers_octree_->ProcOctree(true, false, false);
     sub_div_milestones_.pop_back();
   }

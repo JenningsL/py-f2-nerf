@@ -15,6 +15,7 @@ namespace CustomOps {
 
 torch::Tensor ScatterAdd(torch::Tensor emb, torch::Tensor idx, torch::Tensor to_add);
 torch::Tensor ScatterIdx(int n_all_pts, torch::Tensor idx_start_end, torch::Tensor emb_idx);
+torch::Tensor ScatterMask(int n_all_pts, torch::Tensor idx_start_end);
 }
 
 #endif //SANR_SCATTER_H

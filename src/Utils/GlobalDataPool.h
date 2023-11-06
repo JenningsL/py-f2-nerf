@@ -26,6 +26,8 @@ public:
   float meaningful_sampled_pts_per_ray_ = 512.f;
   float learning_rate_ = 1.f;
   float distortion_weight_ = 0.f;
+  float ray_march_init_fineness_ = 16.f;
+  float ray_march_fineness_decay_end_iter_ = 10000;
   float ray_march_fineness_ = 1.f;
   float near_ = 0.1f;
   float gradient_scaling_progress_ = 1.f;

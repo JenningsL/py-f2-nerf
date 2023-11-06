@@ -5,14 +5,17 @@
 #ifndef SANR_TCNNWP_H
 #define SANR_TCNNWP_H
 
+#include <torch/torch.h>
+
 #include "Field.h"
 #include <tiny-cuda-nn/cpp_api.h>
 
-class TCNNWP : public Field {
+class TCNNWP : public torch::nn::Module, public Field {
   using Tensor = torch::Tensor;
 public:
   TCNNWP(GlobalDataPool* global_data_pool, int d_in, int d_out, int d_hidden, int n_hidden_layers);
 
+  Tensor forward(const Tensor& pts);
   Tensor Query(const Tensor& pts) override;
 
   int LoadStates(const std::vector<Tensor>& states, int idx) override;

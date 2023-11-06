@@ -82,10 +82,10 @@ set(ALL_LIBS ${TORCH_LIBRARIES} ${TORCH_CUDA_LIBRARIES} ${ZLIB_LIBRARIES} yaml-c
 set(ALL_LIBS ${ALL_LIBS} tiny-cuda-nn stdc++fs)
 
 # ------------------------------------ Add executables ---------------------------------------
-# add_executable(main main.cpp ${SRC_ALL})
-# target_link_libraries(main ${ALL_LIBS})
-# set_property(TARGET main PROPERTY CXX_STANDARD 17)
-# set_property(TARGET main PROPERTY CUDA_ARCHITECTURES ${TCNN_CUDA_ARCHITECTURES})
+add_executable(main main.cpp ${SRC_ALL})
+target_link_libraries(main ${ALL_LIBS})
+set_property(TARGET main PROPERTY CXX_STANDARD 17)
+set_property(TARGET main PROPERTY CUDA_ARCHITECTURES ${TCNN_CUDA_ARCHITECTURES})
 
 # python extension
 add_subdirectory(${CMAKE_SOURCE_DIR}/External/pybind11-2.11.1)

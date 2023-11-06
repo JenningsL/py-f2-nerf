@@ -46,6 +46,10 @@ ExpRunner::ExpRunner(const std::string& conf_path) {
 
   // Dataset
   dataset_ = std::make_unique<Dataset>(global_data_pool_.get());
+  global_data_pool_->c2w_train_ = dataset_->c2w_train_;
+  global_data_pool_->w2c_train_ = dataset_->w2c_train_;
+  global_data_pool_->intri_train_ = dataset_->intri_train_;
+  global_data_pool_->bounds_train_ = dataset_->bounds_train_;
 
   // Renderer
   renderer_ = std::make_unique<Renderer>(global_data_pool_.get(), dataset_->n_images_);

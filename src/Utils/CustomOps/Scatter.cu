@@ -129,3 +129,26 @@ Tensor CustomOps::ScatterIdx(int n_all_pts, Tensor idx_start_end, Tensor emb_idx
 
   return ret;
 }
+
+__global__ void ScatterMaskKernel(int n_rays, int* idx_start_end, int* mask) {
+  int ray_idx = LINEAR_IDX();
+  if (ray_idx >= n_rays) return;
+  int idx_start = idx_start_end[ray_idx * 2];
+  int idx_end = idx_start_end[ray_idx * 2 + 1];
+
+  for (int i = idx_start; i < idx_end; i++) {
+    mask[i] = 1;
+  }
+}
+
+// 1 if within idx_start_end, else 0. Used for dynamic batch slicing
+Tensor CustomOps::ScatterMask(int n_all_pts, Tensor idx_start_end) {
+  Tensor mask = torch::zeros({ n_all_pts }, CUDAInt);
+  int n_rays = idx_start_end.size(0);
+  dim3 grid_dim = LIN_GRID_DIM(n_rays);
+  dim3 block_dim = LIN_BLOCK_DIM(n_rays);
+
+  ScatterMaskKernel<<<grid_dim, block_dim>>>(n_rays, idx_start_end.data_ptr<int>(), mask.data_ptr<int>());
+
+  return mask;
+}

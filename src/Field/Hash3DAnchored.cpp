@@ -77,8 +77,18 @@ Hash3DAnchored::Hash3DAnchored(GlobalDataPool* global_data_pool) {
     feat_local_idx_ = feat_local_idx_.to(torch::kInt32).contiguous();
   }
 
+  prim_pool_ = register_buffer("prim_pool_", prim_pool_);
+  bias_pool_ = register_buffer("bias_pool_", bias_pool_);
+  feat_pool_ = register_parameter("feat_pool_", feat_pool_);
+
   // MLP
-  mlp_ = std::make_unique<TCNNWP>(global_data_pool_, N_LEVELS * N_CHANNELS, mlp_out_dim_, mlp_hidden_dim_, n_hidden_layers_);
+  mlp_ = std::make_shared<TCNNWP>(global_data_pool_, N_LEVELS * N_CHANNELS, mlp_out_dim_, mlp_hidden_dim_, n_hidden_layers_);
+  // mlp_ = register_module("mlp_", mlp_);
+  mlp_->params_ = register_parameter("mlp_params_", mlp_->params_);
+}
+
+Tensor Hash3DAnchored::forward(const Tensor& points, const Tensor& anchors) {
+  return AnchoredQuery(points, anchors);
 }
 
 Tensor Hash3DAnchored::AnchoredQuery(const Tensor& points, const Tensor& anchors) {

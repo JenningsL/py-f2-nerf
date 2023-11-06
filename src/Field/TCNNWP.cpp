@@ -97,7 +97,11 @@ TCNNWP::TCNNWP(GlobalDataPool* global_data_pool, int d_in, int d_out, int d_hidd
   module_->initialize_params(seed, params.data_ptr<float>());
   params_ = params.to(torch::kFloat32);
   params_.requires_grad_(true);
+
+  params_ = register_parameter("params_", params_);
 }
+
+Tensor TCNNWP::forward(const Tensor& pts) {return Query(pts);}
 
 Tensor TCNNWP::Query(const Tensor& pts) {
   auto info = torch::make_intrusive<TCNNWPInfo>();
